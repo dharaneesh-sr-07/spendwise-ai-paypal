@@ -1,72 +1,153 @@
-# SpendWise AI
+💰 SpendWise AI – Smart Personal Finance Assistant
 
-A starter personal-finance dashboard built with React + Vite, Express, SQLite, Gemini AI, and PayPal Sandbox.
+Spend Smarter. Save Better. Live Better.
 
-## Important credential safety
+🌐 Live Demo: https://spendwise-ai-paypal-2dg.vercel.app
+💻 GitHub Repository: https://github.com/dharaneesh-sr-07/spendwise-ai-paypal
 
-Keys were shared in chat earlier. Treat those values as exposed: revoke/rotate the Gemini key and PayPal Secret before using this project. Do not paste replacement secrets into chat or commit them to GitHub.
+📌 About the Project
 
-## Requirements
+SpendWise AI is an AI-powered personal finance management application designed to help users understand their spending habits, manage daily expenses, and make smarter financial decisions.
 
-- Node.js LTS (Node 20 or newer recommended)
-- VS Code
-- New Gemini API key from Google AI Studio
-- PayPal Sandbox app Client ID and Secret from PayPal Developer Dashboard
+It analyzes transaction data, provides personalized financial insights, tracks budgets, and offers AI-powered suggestions to reduce unnecessary spending and improve savings.
 
-## Setup (Windows / VS Code)
+🎯 Problem Statement
 
-1. Extract the ZIP and open the `spendwise-ai` folder in VS Code.
-2. In the terminal run:
+People receive daily transaction notifications but often struggle to understand where their money goes. They lack clear spending insights, effective budget tracking, and practical suggestions to save money.
 
-   ```bash
-   npm install
-   ```
+💡 Our Solution
 
-3. Create `server/.env` using `server/.env.example` as a template. Fill in your rotated credentials locally:
+SpendWise AI transforms transaction data into meaningful financial insights using Artificial Intelligence. It helps users:
 
-   ```env
-   PORT=5000
-   GEMINI_API_KEY=your_new_gemini_key
-   PAYPAL_CLIENT_ID=your_sandbox_client_id
-   PAYPAL_CLIENT_SECRET=your_rotated_sandbox_secret
-   PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
-   ```
+Track income and expenses.
 
-4. In the project root, create a file named `.env` with the PayPal Sandbox Client ID (the Client ID is intended to be public in the browser SDK):
+Monitor monthly budgets.
 
-   ```env
-   VITE_PAYPAL_CLIENT_ID=your_sandbox_client_id
-   VITE_API_BASE_URL=http://localhost:5000
-   ```
+Identify unnecessary spending.
 
-   You can use `.env.frontend.example` as the template. Never put the PayPal Secret or Gemini key in the root `.env`.
+Receive AI-powered financial insights.
 
-5. Run:
+Get personalized saving suggestions.
 
-   ```bash
-   npm run dev
-   ```
+Interact with an AI financial assistant.
 
-6. Open `http://localhost:5173`.
+Experience PayPal Sandbox payment integration.
 
-The app creates `server/spendwise.sqlite` automatically when the backend starts. Keep both `.env` files private. The provided `.gitignore` excludes `.env` files.
+✨ Key Features
 
-## Features
+Dashboard: View financial summaries and spending activity.
 
-- Add and delete income/expense transactions
-- SQLite persistence for transactions and budget
-- Category expense summary
-- Gemini-generated spending suggestions
-- PayPal Sandbox demo checkout (fixed USD $5.00 demo payment)
+Transaction Management: Add, view, and delete transactions.
 
-## Notes / limitations
+Budget Tracking: Set and monitor monthly budgets.
 
-- This is a local hackathon/demo starter, not a production financial service.
-- It has no login or user isolation yet. Do not put real users' financial data into a public deployment.
-- The PayPal payment is a fixed $5.00 demo payment; it is not a transaction for an actual expense and does not move expense data.
-- AI requests send the expense data included in the request to Google's Gemini API. Do not include unnecessary personal information.
-- Use only Sandbox credentials for testing. Live payments require additional security, ownership validation, verification, error handling, and compliance work.
-- If `better-sqlite3` fails to install, use a current Node.js LTS version and rerun `npm install`.
+AI Financial Insights: Analyze spending patterns and receive saving recommendations.
 
+AI Assistant: Ask questions about personal spending and budgeting.
 
-**Windows install note:** This package uses `sql.js` for SQLite storage so installation does not require Visual Studio C++ Build Tools. The database is saved to `server/spendwise.sqlite`.
+PayPal Integration: Demonstrate payment processing using PayPal Sandbox.
+
+🛠️ Technology Stack
+
+Component
+
+Technology
+
+Frontend
+
+React.js, Vite
+
+Backend
+
+Node.js, Express.js
+
+Database
+
+SQLite (sql.js)
+
+AI Integration
+
+Google Gemini API
+
+Payment Integration
+
+PayPal Sandbox
+
+Frontend Deployment
+
+Vercel
+
+Backend Deployment
+
+Render
+
+Version Control
+
+GitHub
+
+🔄 How It Works
+
+Users add their income and expense transactions.
+
+The application stores transaction information in the database.
+
+The backend processes the financial data.
+
+Gemini AI analyzes spending patterns.
+
+The application displays insights and saving recommendations.
+
+Users monitor their budgets and manage expenses through the dashboard.
+
+🚀 Live Application
+
+Try SpendWise AI:
+https://spendwise-ai-paypal-2dg.vercel.app
+
+🔐 Environment Variables
+
+Configure the following environment variables for deployment.
+
+Backend (Render):
+
+PORT
+
+FRONTEND_ORIGIN
+
+GEMINI_API_KEY
+
+PAYPAL_CLIENT_ID
+
+PAYPAL_CLIENT_SECRET
+
+PAYPAL_BASE_URL
+
+Frontend (Vercel):
+
+VITE_API_BASE_URL
+
+VITE_PAYPAL_CLIENT_ID (if required by the frontend)
+
+Use PayPal Sandbox credentials for testing. Never upload API keys or secrets to GitHub.
+
+🔮 Future Enhancements
+
+Automatic transaction tracking.
+
+Bank and payment application integration.
+
+Advanced expense prediction.
+
+Personalized monthly saving plans.
+
+Multi-user authentication.
+
+Downloadable financial reports.
+
+Support for multiple Indian languages.
+
+👨‍💻 Project Purpose
+
+Developed as an AI-powered financial management solution for the PayPal AI Hackathon.
+
+SpendWise AI – Making Every Rupee Count!
