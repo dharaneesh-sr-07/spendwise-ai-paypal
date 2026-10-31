@@ -216,7 +216,7 @@ async function sendChatMessage(event) {
     </div>
   </div>
 
-  <div className="nav-caption">WORKSPACE</div>
+  
       <div className="nav-caption">WORKSPACE</div>
       <nav>
         {navItems.map(({ name, icon: Icon }) => <button key={name} className={`nav-item ${activeTab === name ? "active" : ""}`} onClick={() => setActiveTab(name)}>
