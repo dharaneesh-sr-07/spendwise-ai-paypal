@@ -71,3 +71,9 @@
     box-sizing: border-box;
   }
 }
+.brand-logo {
+  width: 55px;
+  height: 55px;
+  object-fit: contain;
+  border-radius: 10px;
+}

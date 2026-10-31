@@ -203,7 +203,18 @@ async function sendChatMessage(event) {
   return <div className="app-shell">
     <aside className="sidebar">
       <div className="brand">
-        <div className="brand-icon"><CircleDollarSign size={24} /></div>
+        <div className="brand">
+  <img
+    src="/spendwise-logo.jpeg"
+    alt="SpendWise AI Logo"
+    className="brand-logo"
+  />
+
+  <div>
+    <strong>SpendWise <span>AI</span></strong>
+    <small>Personal finance</small>
+  </div>
+</div>
         <div><strong>SpendWise <span>AI</span></strong><small>Personal finance</small></div>
       </div>
       <div className="nav-caption">WORKSPACE</div>
