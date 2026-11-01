@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config({ path: path.join(__dirname, ".env") });
+console.log("Gemini API key loaded:", Boolean(process.env.GEMINI_API_KEY));
 
 import express from "express";
 import cors from "cors";
