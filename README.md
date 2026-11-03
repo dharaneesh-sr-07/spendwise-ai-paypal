@@ -3,6 +3,7 @@
 Spend Smarter. Save Better. Live Better.
 
 🌐 Live Demo: https://spendwise-ai-paypal-2dg.vercel.app
+
 💻 GitHub Repository: https://github.com/dharaneesh-sr-07/spendwise-ai-paypal
 
 📌 About the Project
