@@ -91,7 +91,7 @@ app.post("/api/ai-insights", async (req, res) => {
 
   try {
     const result = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
+      model: "gemini-3.5-flash-lite",
       contents: [
         "You are SpendWise AI, a practical personal budgeting assistant. Analyze the expense records below. Give 3-5 concise, specific saving suggestions, identify the largest spending category if possible, and avoid pretending to know income or account balances that are not supplied. Do not provide investment, tax, or credit advice. Use clear simple English. Expense records (JSON):",
         JSON.stringify(safeExpenses)
