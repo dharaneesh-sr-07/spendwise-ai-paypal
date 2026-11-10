@@ -125,25 +125,49 @@ app.post("/api/assistant/chat", async (req, res) => {
   }
 
   try {
-    const result = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
-      contents: [
-        "You are SpendWise AI, a friendly general-purpose AI assistant. Answer general questions, explain concepts, help with coding and writing, plan trips, and provide practical budgeting guidance. Use clear language and organized steps. Be honest when you are uncertain. Never claim to have checked live prices, completed payments, or verified offers unless actual tools or data confirm it. Do not claim access to the user's private financial records unless they are explicitly provided.",
-        "User's message:",
-        message.trim()
-      ].join("\n\n")
-    });
+  let result;
 
-    res.json({
-      reply: result.text || "I couldn't generate an answer. Please try again."
-    });
-  } catch (error) {
-    console.error("AI assistant request failed:", error.message);
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      result = await ai.models.generateContent({
+        model: "gemini-3.8-flash",
+        contents: [
+          "You are SpendWise AI, a friendly assistant. Answer questions about expenses, budgeting, saving money, coding, writing and travel planning. Give clear and short answers.",
+          "User's message:",
+          message.trim()
+        ].join("\n\n")
+      });
 
-    res.status(502).json({
-      error: "The AI assistant could not answer. Check the Gemini model, API key, and quota."
-    });
+      break;
+    } catch (error) {
+      const errorMessage = String(error?.message || "");
+      const temporaryError =
+        error?.status === 503 ||
+        error?.code === 503 ||
+        errorMessage.includes("503") ||
+        errorMessage.includes("UNAVAILABLE");
+
+      if (!temporaryError || attempt === 2) {
+        throw error;
+      }
+
+      await new Promise(resolve =>
+        setTimeout(resolve, 1000 * (2 ** attempt))
+      );
+    }
   }
+
+  res.json({
+    reply: result?.text || "Please try asking again."
+  });
+
+} catch (error) {
+  console.error("AI assistant request failed:", error.message);
+
+  res.status(503).json({
+    error: "Gemini AI is temporarily busy. Please try again in a moment."
+  });
+}
 });
 async function getPayPalAccessToken() {
   const clientId = process.env.PAYPAL_CLIENT_ID;
