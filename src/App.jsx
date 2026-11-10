@@ -3,7 +3,7 @@ import { PayPalButtons, usePayPalScriptReducer } from "@paypal/react-paypal-js";
 import {
   Activity, ArrowDownLeft, ArrowUpRight, BrainCircuit, MessageCircle, ChartNoAxesColumn,
   CircleDollarSign, CreditCard, LayoutDashboard, LoaderCircle, Plus, RefreshCw,
-  ShieldCheck, Trash2, Wallet, X
+  ShieldCheck, Trash2, Wallet, X, Sparkles, Target, CalendarDays
 } from "lucide-react";
 import { api } from "./api.js";
 
@@ -70,6 +70,13 @@ export default function App() {
   const [chatMessages, setChatMessages] = useState([]);
 const [chatInput, setChatInput] = useState("");
 const [chatLoading, setChatLoading] = useState(false);
+  const [savingsGoals, setSavingsGoals] = useState([]);
+  const [goalForm, setGoalForm] = useState({ name: "Emergency fund", targetAmount: "5000", savedAmount: "0", targetDate: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10) });
+  const [goalSaving, setGoalSaving] = useState(false);
+  const [analysis, setAnalysis] = useState(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [savingsAdvice, setSavingsAdvice] = useState({});
+  const [adviceLoading, setAdviceLoading] = useState(null);
   const [budgetDraft, setBudgetDraft] = useState("15000");
   const [form, setForm] = useState({ title: "", amount: "", type: "expense", category: "Food", date: today });
 
@@ -83,8 +90,9 @@ const [chatLoading, setChatLoading] = useState(false);
     setLoading(true);
     setError("");
     try {
-      const [rows, budgetData] = await Promise.all([api.transactions(), api.budget()]);
+      const [rows, budgetData, goals] = await Promise.all([api.transactions(), api.budget(), api.savingsGoals()]);
       setTransactions(rows);
+      setSavingsGoals(goals);
       setBudget(budgetData.amount);
       setBudgetDraft(String(budgetData.amount));
     } catch (err) {
@@ -158,6 +166,41 @@ const [chatLoading, setChatLoading] = useState(false);
       setInsights(err.message);
     } finally { setAiLoading(false); }
   }
+async function runSpendingAnalysis() {
+  setAnalysisLoading(true);
+  try { setAnalysis(await api.spendingAnalysis()); }
+  catch (err) { notify(err.message, true); }
+  finally { setAnalysisLoading(false); }
+}
+async function createSavingsGoal(event) {
+  event.preventDefault(); setGoalSaving(true);
+  try {
+    const created = await api.addSavingsGoal({ name: goalForm.name, targetAmount: Number(goalForm.targetAmount), savedAmount: Number(goalForm.savedAmount), targetDate: goalForm.targetDate });
+    setSavingsGoals((current) => [...current, created].sort((a, b) => a.target_date.localeCompare(b.target_date)));
+    setGoalForm({ name: "", targetAmount: "", savedAmount: "0", targetDate: new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10) });
+    notify("Savings goal saved to SQLite.");
+  } catch (err) { notify(err.message, true); }
+  finally { setGoalSaving(false); }
+}
+async function updateGoalProgress(goal) {
+  const entered = window.prompt(`Enter total amount saved for ${goal.name} (₹):`, String(goal.saved_amount));
+  if (entered === null) return;
+  const amount = Number(entered);
+  if (!Number.isFinite(amount) || amount < 0 || amount > Number(goal.target_amount)) return notify("Enter a valid amount not greater than the goal target.", true);
+  try { const updated = await api.updateSavingsGoal(goal.id, amount); setSavingsGoals((current) => current.map((item) => item.id === goal.id ? updated : item)); setSavingsAdvice((current) => ({ ...current, [goal.id]: null })); notify("Savings progress updated."); }
+  catch (err) { notify(err.message, true); }
+}
+async function removeGoal(id) {
+  try { await api.deleteSavingsGoal(id); setSavingsGoals((current) => current.filter((goal) => goal.id !== id)); notify("Savings goal deleted."); }
+  catch (err) { notify(err.message, true); }
+}
+async function getSavingsAdvice(goal) {
+  setAdviceLoading(goal.id);
+  try { const result = await api.savingsAdvice({ name: goal.name, targetAmount: Number(goal.target_amount), savedAmount: Number(goal.saved_amount), targetDate: goal.target_date }); setSavingsAdvice((current) => ({ ...current, [goal.id]: result })); }
+  catch (err) { notify(err.message, true); }
+  finally { setAdviceLoading(null); }
+}
+
 async function sendChatMessage(event) {
   event.preventDefault();
 
@@ -197,6 +240,8 @@ async function sendChatMessage(event) {
   { name: "Dashboard", icon: LayoutDashboard },
   { name: "Transactions", icon: Activity },
   { name: "Budget", icon: Wallet },
+  { name: "Spending Analyzer", icon: ChartNoAxesColumn },
+  { name: "Savings Planner", icon: Target },
   { name: "AI Assistant", icon: MessageCircle }
 ];
 
@@ -298,6 +343,37 @@ async function sendChatMessage(event) {
           <div className="bar-track budget-track"><div className="bar-fill bar-budget" style={{ width: `${budget ? Math.min(monthExpenses / budget * 100, 100) : 0}%` }} /></div>
           <p>{budget ? `${(monthExpenses / budget * 100).toFixed(1)}% of budget used` : "Set a budget to track your progress."}</p>
           <form className="budget-form" onSubmit={saveBudget}><label>Monthly budget (₹)<input type="number" min="0" step="1" value={budgetDraft} onChange={(e) => setBudgetDraft(e.target.value)} required /></label><button className="button button-primary">Save budget</button></form>
+        </section>
+      </div>}
+
+      {activeTab === "Spending Analyzer" && <div className="single-column wide-column">
+        <section className="ai-hero"><div className="ai-icon"><Sparkles size={28} /></div><span className="eyebrow light">GEMINI POWERED ANALYSIS</span><h2>Understand your spending.</h2><p>Analyze your recorded income and expenses, find your biggest categories, and discover practical ways to save.</p></section>
+        <section className="panel">
+          <div className="panel-heading"><div><span className="eyebrow">YOUR TRANSACTION DATA</span><h2>Spending overview</h2></div><button className="button button-primary" onClick={runSpendingAnalysis} disabled={analysisLoading || transactions.length === 0}><Sparkles size={16} /> {analysisLoading ? "Analyzing…" : "Analyze with AI"}</button></div>
+          <div className="stats-grid analyzer-stats"><StatCard icon={ArrowDownLeft} label="RECORDED INCOME" value={money(totals.income)} note="All saved income" tone="green" /><StatCard icon={ArrowUpRight} label="RECORDED EXPENSES" value={money(totals.expenses)} note="All saved expenses" tone="orange" /><StatCard icon={Wallet} label="NET BALANCE" value={money(totals.income - totals.expenses)} note="Income minus expenses" tone="blue" /></div>
+          <h3 className="subheading">Expense categories</h3>
+          {categoryTotals.length === 0 ? <div className="empty-state">Add expense transactions to see the analysis.</div> : <div className="category-list">{categoryTotals.map(([name, amount], index) => <div className="category-row" key={name}><div className="category-top"><span>{name}</span><strong>{money(amount)}</strong></div><div className="bar-track"><div className={`bar-fill bar-${index % 5}`} style={{ width: `${totals.expenses ? amount / totals.expenses * 100 : 0}%` }} /></div><small className="muted">{totals.expenses ? (amount / totals.expenses * 100).toFixed(1) : 0}% of recorded expenses</small></div>)}</div>}
+        </section>
+        {analysis && <section className="panel"><span className="eyebrow">PERSONALIZED AI REPORT</span><h2>What Gemini found</h2><div className="analysis-summary"><div><small>Total income</small><strong>{money(analysis.totalIncome)}</strong></div><div><small>Total expenses</small><strong>{money(analysis.totalExpenses)}</strong></div><div><small>Net balance</small><strong>{money(analysis.net)}</strong></div></div><div className="insight-text">{analysis.analysis}</div></section>}
+      </div>}
+
+      {activeTab === "Savings Planner" && <div className="single-column wide-column">
+        <section className="ai-hero"><div className="ai-icon"><Target size={28} /></div><span className="eyebrow light">SMART SAVINGS GOALS</span><h2>Turn your plans into progress.</h2><p>Create a target, choose a deadline, and see the daily, weekly and monthly amount needed to reach it.</p></section>
+        <section className="panel"><span className="eyebrow">CREATE A GOAL</span><h2>New savings goal</h2><form className="goal-form" onSubmit={createSavingsGoal}>
+          <label>Goal name<input required maxLength="80" value={goalForm.name} onChange={(e) => setGoalForm({ ...goalForm, name: e.target.value })} placeholder="e.g. New laptop" /></label>
+          <label>Target amount (₹)<input required type="number" min="1" step="0.01" value={goalForm.targetAmount} onChange={(e) => setGoalForm({ ...goalForm, targetAmount: e.target.value })} /></label>
+          <label>Already saved (₹)<input required type="number" min="0" step="0.01" value={goalForm.savedAmount} onChange={(e) => setGoalForm({ ...goalForm, savedAmount: e.target.value })} /></label>
+          <label>Target date<input required type="date" min={today} value={goalForm.targetDate} onChange={(e) => setGoalForm({ ...goalForm, targetDate: e.target.value })} /></label>
+          <button className="button button-primary" disabled={goalSaving}>{goalSaving ? "Saving…" : "Save savings goal"}</button>
+        </form></section>
+        <section className="panel"><div className="panel-heading"><div><span className="eyebrow">YOUR PLAN</span><h2>Saved goals</h2></div><span className="goal-count">{savingsGoals.length} goals</span></div>
+          {savingsGoals.length === 0 ? <div className="empty-state">No savings goals yet. Create your first goal above.</div> : <div className="goal-list">{savingsGoals.map((goal) => { const remaining = Math.max(0, Number(goal.target_amount) - Number(goal.saved_amount)); const days = Math.max(1, Math.ceil((new Date(`${goal.target_date}T00:00:00`) - new Date(`${today}T00:00:00`)) / 86400000)); const pct = Math.min(100, Number(goal.saved_amount) / Number(goal.target_amount) * 100); const advice = savingsAdvice[goal.id]; return <article className="goal-card" key={goal.id}>
+            <div className="goal-card-top"><div><h3>{goal.name}</h3><small className="muted"><CalendarDays size={13} /> Target: {goal.target_date} · {days} day(s) left</small></div><button className="delete-button" onClick={() => removeGoal(goal.id)} title="Delete goal"><Trash2 size={16} /></button></div>
+            <div className="goal-amounts"><strong>{money(goal.saved_amount)}</strong><span>of {money(goal.target_amount)}</span><b>{pct.toFixed(1)}%</b></div><div className="bar-track goal-progress"><div className="bar-fill" style={{ width: `${pct}%` }} /></div>
+            <p className="muted goal-remaining">{remaining > 0 ? `${money(remaining)} remaining · Save about ${money(remaining / days)} daily` : "Goal completed! Great work."}</p>
+            <div className="goal-actions"><button className="button button-outline" onClick={() => updateGoalProgress(goal)}>Update progress</button><button className="button button-primary" onClick={() => getSavingsAdvice(goal)} disabled={adviceLoading === goal.id}><Sparkles size={15} /> {adviceLoading === goal.id ? "Thinking…" : "AI saving tips"}</button></div>
+            {advice && <div className="goal-advice"><div className="advice-rates"><span>Daily <strong>{money(advice.daily)}</strong></span><span>Weekly <strong>{money(advice.weekly)}</strong></span><span>Monthly <strong>{money(advice.monthly)}</strong></span></div><p className="insight-text">{advice.advice}</p></div>}
+          </article>; })}</div>}
         </section>
       </div>}
 

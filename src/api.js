@@ -19,10 +19,13 @@ export const api = {
   budget: () => request("/api/budget"),
   setBudget: (amount) => request("/api/budget", { method: "PUT", body: JSON.stringify({ amount }) }),
   insights: (expenses) => request("/api/ai-insights", { method: "POST", body: JSON.stringify({ expenses }) }),
-  assistantChat: (message) => request("/api/assistant/chat", {
-  method: "POST",
-  body: JSON.stringify({ message })
-}),
+  spendingAnalysis: () => request("/api/spending-analysis", { method: "POST", body: "{}" }),
+  savingsGoals: () => request("/api/savings-goals"),
+  addSavingsGoal: (goal) => request("/api/savings-goals", { method: "POST", body: JSON.stringify(goal) }),
+  updateSavingsGoal: (id, savedAmount) => request(`/api/savings-goals/${id}`, { method: "PUT", body: JSON.stringify({ savedAmount }) }),
+  deleteSavingsGoal: (id) => request(`/api/savings-goals/${id}`, { method: "DELETE" }),
+  savingsAdvice: (goal) => request("/api/savings-advice", { method: "POST", body: JSON.stringify(goal) }),
+  assistantChat: (message) => request("/api/assistant/chat", { method: "POST", body: JSON.stringify({ message }) }),
   createPayPalOrder: () => request("/api/paypal/create-order", { method: "POST", body: "{}" }),
   capturePayPalOrder: (orderID) => request("/api/paypal/capture-order", { method: "POST", body: JSON.stringify({ orderID }) })
 };
